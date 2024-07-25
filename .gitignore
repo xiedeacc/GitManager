@@ -4,5 +4,4 @@ build
 *.hprof
 .gradle
 logs
-src/main/resources/sync_github_gitlab_repos.txt
 src/main/resources/gitlab_secret.json
