@@ -324,7 +324,7 @@ public class Util {
             if (ret != 0) {
                 return false;
             }
-            if (!fetchProject(url)) {
+            if (!fetchProject(full_path)) {
                 logger.error("fetch error: " + url);
                 return false;
             }
@@ -334,11 +334,10 @@ public class Util {
         return false;
     }
 
-    public static boolean fetchProject(String url) {
+    public static boolean fetchProject(String full_path) {
         try {
-            String full_path = getFullPath(url);
             File dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
-            String[] FETCH_ARGS = new String[]{"fetch", "--all", url, dir.getAbsolutePath()};
+            String[] FETCH_ARGS = new String[]{"fetch", "--all"};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", FETCH_ARGS);
             builder.directory(dir);
             OutputStream os = new ByteArrayOutputStream();
