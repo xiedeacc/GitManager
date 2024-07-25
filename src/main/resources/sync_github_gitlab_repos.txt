@@ -1,4 +1,4 @@
-#git@github.com:xiedeacc/share.git
+git@github.com:xiedeacc/share.git
 git@github.com:Cyan4973/xxHash.git
 git@github.com:Mbed-TLS/mbedtls.git
 git@github.com:abseil/abseil-cpp.git

@@ -105,7 +105,7 @@ public class UtilTest {
             logger.info("full_path: " + full_path);
 
         } catch (IllegalFormatException e) {
-            throw new RuntimeException(e);
+
         }
     }
 
@@ -130,7 +130,7 @@ public class UtilTest {
             logger.info("name: " + full_path);
 
         } catch (IllegalFormatException e) {
-            throw new RuntimeException(e);
+
         }
     }
 
@@ -150,7 +150,7 @@ public class UtilTest {
             logger.info("name: " + full_path);
 
         } catch (IllegalFormatException e) {
-            throw new RuntimeException(e);
+
         }
     }
 

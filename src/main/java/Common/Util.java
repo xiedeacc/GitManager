@@ -121,6 +121,13 @@ public class Util {
     }
 
     public static boolean isValidGitSSHUrl(String url) {
+        if (url.startsWith("git@") && url.contains("/")) {
+            String GIT_SSH_URL_REGEX =
+                    "^git@[\\w.-]+:[\\w.-]+/[\\w.-]+\\.git$";
+            Pattern pattern = Pattern.compile(GIT_SSH_URL_REGEX);
+            Matcher matcher = pattern.matcher(url);
+            return matcher.matches();
+        }
         String GIT_SSH_URL_REGEX =
                 "^git@[\\w.-]+:[\\w.-]+\\.git$";
         Pattern pattern = Pattern.compile(GIT_SSH_URL_REGEX);
