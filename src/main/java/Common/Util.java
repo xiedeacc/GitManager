@@ -69,12 +69,13 @@ public class Util {
     return dir.delete();
   }
 
-  public static void loadFile(String file_name, Collection<String> list) {
-    try {
-      String manual_need_download_project_url_path =
-          Util.class.getClassLoader().getResource(file_name).getPath();
-      File file = new File(manual_need_download_project_url_path);
-      InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
+  public static void loadFile(Collection<String> list) {
+    try (InputStream inputStream =
+        Util.class.getClassLoader().getResourceAsStream("sync_github_gitlab_repos.txt")) {
+      if (inputStream == null) {
+        throw new RuntimeException("File not found!");
+      }
+      InputStreamReader reader = new InputStreamReader(inputStream);
       BufferedReader br = new BufferedReader(reader);
       String line = br.readLine();
       while (line != null) {
@@ -87,7 +88,7 @@ public class Util {
       }
       br.close();
     } catch (Exception e) {
-      logger.error("input " + file_name + " error! " + e.getMessage());
+      logger.error("input sync_github_gitlab_repos.txt error! " + e.getMessage());
     }
   }
 

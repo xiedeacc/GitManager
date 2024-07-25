@@ -1,3 +1,4 @@
+git@github.com:xiedeacc/bazel_template.git
 git@github.com:xiedeacc/GitManager.git
 git@github.com:xiedeacc/share.git
 git@github.com:Cyan4973/xxHash.git
