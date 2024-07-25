@@ -9,8 +9,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.dircache.InvalidPathException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -49,7 +53,7 @@ public class Util {
             gitlabSecret = objectMapper.readValue(inputStream, GitlabSecret.class);
             String jsonString = objectMapper.writeValueAsString(gitlabSecret);
             logger.info("loaed gitlab config: " + jsonString);
-           gitLabApi = new GitLabApi(gitlabSecret.API_URL_BASE, gitlabSecret.API_TOKEN);
+            gitLabApi = new GitLabApi(gitlabSecret.API_URL_BASE, gitlabSecret.API_TOKEN);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -62,10 +66,12 @@ public class Util {
         File dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + path);
         return dir.exists() && dir.isDirectory();
     }
+
     public static boolean deleteDir(String path) {
         File dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + path);
         return dir.delete();
     }
+
     public static void loadFile(String file_name, Collection<String> list) {
         try {
             String manual_need_download_project_url_path = Util.class.getClassLoader().getResource(file_name).getPath();
@@ -101,16 +107,19 @@ public class Util {
             logger.error("outputToFile exception, path: " + path);
         }
     }
+
     public static boolean isValidLinuxFilePath(String path) {
         if (path == null || path.isEmpty()) {
             return false;
         }
         return GenericValidator.matchRegexp(path, "(/[^/ ]*)*([^/ ]+(/[^/ ]*)*)?");
     }
+
     public static boolean isValidURL(String url) {
         UrlValidator urlValidator = new UrlValidator();
         return urlValidator.isValid(url);
     }
+
     public static boolean isValidGitSSHUrl(String url) {
         String GIT_SSH_URL_REGEX =
                 "^git@[\\w.-]+:[\\w.-]+/[\\w.-]+\\.git$";
@@ -118,18 +127,23 @@ public class Util {
         Matcher matcher = pattern.matcher(url);
         return matcher.matches();
     }
+
     public static boolean isValidGitUrl(String url) {
         return isValidGitSSHUrl(url) || isValidURL(url);
     }
+
     public static boolean isSSHUrl(String url) {
-        return isValidGitUrl(url ) && url.startsWith("git@");
+        return isValidGitUrl(url) && url.startsWith("git@");
     }
+
     public static boolean isHttpUrl(String url) {
-        return isValidGitUrl(url ) && url.startsWith("http://");
+        return isValidGitUrl(url) && url.startsWith("http://");
     }
+
     public static boolean isHttpsUrl(String url) {
-        return isValidGitUrl(url ) && url.startsWith("https://");
+        return isValidGitUrl(url) && url.startsWith("https://");
     }
+
     public static String getFullPath(String url) throws IllegalFormatException {
         if (!isValidGitUrl(url)) {
             logger.error(url + " error format!");
@@ -147,6 +161,7 @@ public class Util {
         }
         return full_path.substring(full_path.indexOf("/") + 1);
     }
+
     public static String getGroup(String url) throws IllegalFormatException {
         String full_path = url;
         if (isValidGitUrl(url)) {
@@ -158,6 +173,7 @@ public class Util {
         }
         return full_path.substring(0, full_path.lastIndexOf("/"));
     }
+
     public static String getName(String url) throws IllegalFormatException {
         String full_path = url;
         if (isValidGitUrl(url)) {
@@ -169,13 +185,14 @@ public class Util {
         }
         return full_path.substring(full_path.lastIndexOf("/") + 1);
     }
+
     public static boolean isGitRepository(String full_path) {
         File repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path, ".git");
         if (!repo_dir.exists() || !repo_dir.isDirectory()) {
             return false;
         }
         try {
-            Repository repository =  new FileRepositoryBuilder()
+            Repository repository = new FileRepositoryBuilder()
                     .setGitDir(repo_dir)
                     .readEnvironment()
                     .findGitDir()
@@ -186,6 +203,7 @@ public class Util {
         }
         return false;
     }
+
     public static String getRemoteUrl(String full_path) {
         String ret = null;
         try {
@@ -211,9 +229,11 @@ public class Util {
         }
         return ret;
     }
+
     public static String getGitlabUrl(String full_path) {
         return gitlabSecret.GITLAB_URL_BASE + full_path + ".git";
     }
+
     public static boolean changeRemoteUrl(String path, String url) {
         try {
             File file = new File(gitlabSecret.CODE_PATH_BASE + File.separator + path);
@@ -231,7 +251,7 @@ public class Util {
         return false;
     }
 
-    public static Project getGitlabProject(Object projectIdOrPath ) {
+    public static Project getGitlabProject(Object projectIdOrPath) {
         try {
             return gitLabApi.getProjectApi().getProject(projectIdOrPath);
         } catch (GitLabApiException e) {
@@ -250,6 +270,7 @@ public class Util {
         }
         return false;
     }
+
     public static void getAllGitlabSubGroups(Group parent_group, List<Group> groups) {
         try {
             List<Group> sub_groups = gitLabApi.getGroupApi().getSubGroups(parent_group.getId());
@@ -275,6 +296,7 @@ public class Util {
         }
         return false;
     }
+
     public static boolean cloneProject(String url) {
         try {
             String full_path = getFullPath(url);
@@ -282,12 +304,16 @@ public class Util {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            String[] FETCH_CLONE = new String[]{"clone", "--all", url, dir.getAbsolutePath()};
-            ProcessBuilder builder = FS.DETECTED.runInShell("git", FETCH_CLONE);
+            String[] CLONE_ARGS = new String[]{"clone", "--all", "--no-checkout", url, dir.getAbsolutePath()};
+            ProcessBuilder builder = FS.DETECTED.runInShell("git", CLONE_ARGS);
             builder.directory(dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
             if (ret != 0) {
+                return false;
+            }
+            if (!fetchProject(url)) {
+                logger.error("fetch error: " + url);
                 return false;
             }
             return true;
@@ -295,6 +321,25 @@ public class Util {
         }
         return false;
     }
+
+    public static boolean fetchProject(String url) {
+        try {
+            String full_path = getFullPath(url);
+            File dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            String[] FETCH_ARGS = new String[]{"fetch", "--all", url, dir.getAbsolutePath()};
+            ProcessBuilder builder = FS.DETECTED.runInShell("git", FETCH_ARGS);
+            builder.directory(dir);
+            OutputStream os = new ByteArrayOutputStream();
+            int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            return ret == 0;
+        } catch (Exception e) {
+        }
+        return false;
+    }
+
     public static boolean updateProject(String full_path) {
         try {
             File repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
@@ -303,14 +348,12 @@ public class Util {
             builder.directory(repo_dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
-            if (ret != 0) {
-                return false;
-            }
-            return true;
+            return ret == 0;
         } catch (Exception e) {
         }
         return false;
     }
+
     public static boolean pushProject(String full_path) {
         try {
             File repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
@@ -345,6 +388,7 @@ public class Util {
         }
         return false;
     }
+
     public static Group createGroup(String url) throws IllegalFormatException {
         String group_full_path = Util.getGroup(url);
         String[] group_names = group_full_path.split("/");
@@ -408,20 +452,67 @@ public class Util {
         return null;
     }
 
+    public static boolean resetBranch(String full_path) {
+        try {
+
+            Repository repository = new FileRepositoryBuilder()
+                    .setGitDir(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path, "/.git"))
+                    .build();
+            String currentBranch = repository.getBranch();
+            String currentRemoteBranchName = "origin/" + currentBranch;
+
+            String[] RESET_ARGS = new String[]{"reset", "--hard", currentRemoteBranchName};
+            ProcessBuilder builder = FS.DETECTED.runInShell("git", RESET_ARGS);
+            builder.directory(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
+            OutputStream os = new ByteArrayOutputStream();
+            int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("reset --hard error: " + full_path + ", branch: " + currentBranch);
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     public static boolean checkoutAllBranch(String full_path) {
         try {
             Git git = Git.open(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
             List<Ref> remoteBranches = git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
             for (Ref remoteBranch : remoteBranches) {
                 try {
-                    String branchName = remoteBranch.getTarget().getName().replace("refs/remotes/origin/", "");
+                    String branchName = remoteBranch.getName().replace("refs/remotes/origin/", "");
+                    if (branchName.equals("HEAD")) {
+                        continue;
+                    }
+
                     git.checkout()
                             .setCreateBranch(true)
                             .setName(branchName)
-                            .setStartPoint(remoteBranch.getTarget().getName())
+                            .setStartPoint(remoteBranch.getName())
                             .call();
+
                 } catch (RefAlreadyExistsException e) {
                     continue;
+                } catch (CheckoutConflictException e) {
+                    resetBranch(full_path);
+                    String branchName = remoteBranch.getName().replace("refs/remotes/origin/", "");
+                    git.checkout()
+                            .setCreateBranch(true)
+                            .setName(branchName)
+                            .setStartPoint(remoteBranch.getName())
+                            .call();
+                } catch (InvalidPathException e) {
+                    logger.error("checkout error: " + remoteBranch.getName());
+                }
+                catch (JGitInternalException e) {
+                    File lock_file = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path, ".git/index.lock");
+                    if (lock_file.exists()) {
+                        lock_file.delete();
+                    } else {
+                        e.printStackTrace();
+                    }
                 }
             }
             git.close();
