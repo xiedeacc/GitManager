@@ -564,4 +564,30 @@ public class Util {
         }
         return true;
     }
+
+    public static boolean checkoutDefaultBranch(String full_path) {
+        try {
+            Git git = Git.open(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
+            Ref defaultBranch = git.getRepository().exactRef("refs/remotes/origin/HEAD");
+            if (defaultBranch != null) {
+                String defaultBranchName = defaultBranch.getTarget().getName();
+                String[] CHECKOUT_ARGS = new String[]{"checkout", defaultBranchName};
+                ProcessBuilder builder = FS.DETECTED.runInShell("git", CHECKOUT_ARGS);
+                builder.directory(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
+                OutputStream os = new ByteArrayOutputStream();
+                int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+                if (ret != 0) {
+                    logger.error("checkout error: " + full_path + ", branch: " + defaultBranchName);
+                    return false;
+                }
+                return true;
+            } else {
+                logger.error("Could not determine the default branch." + full_path);
+            }
+            git.close();
+        } catch (InterruptedException ex) {
+        } catch (IOException e) {
+        }
+        return false;
+    }
 }

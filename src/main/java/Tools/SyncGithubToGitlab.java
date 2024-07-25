@@ -30,6 +30,9 @@ public class SyncGithubToGitlab {
             logger.error("change url error: " + repo);
             continue;
           }
+          if (!Util.checkoutDefaultBranch(full_path)) {
+            logger.error("checkout to default branch error: " + full_path);
+          }
           if (!Util.updateProject(full_path)) {
             logger.error("update error: " + repo);
             continue;
