@@ -527,14 +527,14 @@ public class Util {
                             .setStartPoint(remoteBranch.getName())
                             .call();
                 } catch (InvalidPathException e) {
-                    logger.error("checkout error: " + remoteBranch.getName());
+                    logger.error("checkout error: " + remoteBranch.getName() + + ", " + full_path);
                 } catch (JGitInternalException e) {
                     File lock_file =
                             new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path, ".git/index.lock");
                     if (lock_file.exists()) {
                         lock_file.delete();
                     } else {
-                        logger.error("checkout error: " + remoteBranch.getName());
+                        logger.error("checkout error: " + remoteBranch.getName() + ", " + full_path);
                         e.printStackTrace();
                     }
                 }
