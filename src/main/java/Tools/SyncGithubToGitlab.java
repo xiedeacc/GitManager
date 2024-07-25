@@ -35,7 +35,10 @@ public class SyncGithubToGitlab {
           }
           if (!Util.updateProject(full_path)) {
             logger.error("update error: " + repo);
-            continue;
+          }
+
+          if (!Util.fetchProject(full_path)) {
+            logger.error("fetch error: " + repo);
           }
         } else if (Util.isDirExists(full_path)) {
           if (!Util.deleteDir(full_path)) {
