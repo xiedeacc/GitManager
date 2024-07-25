@@ -534,6 +534,7 @@ public class Util {
                     if (lock_file.exists()) {
                         lock_file.delete();
                     } else {
+                        logger.error("checkout error: " + remoteBranch.getName());
                         e.printStackTrace();
                     }
                 }
