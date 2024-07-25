@@ -504,37 +504,57 @@ public class Util {
             List<Ref> remoteBranches =
                     git.branchList().setListMode(ListBranchCommand.ListMode.REMOTE).call();
             for (Ref remoteBranch : remoteBranches) {
+                String branchName = remoteBranch.getName().replace("refs/remotes/origin/", "");
                 try {
-                    String branchName = remoteBranch.getName().replace("refs/remotes/origin/", "");
                     if (branchName.equals("HEAD")) {
                         continue;
                     }
-
                     git.checkout()
                             .setCreateBranch(true)
                             .setName(branchName)
                             .setStartPoint(remoteBranch.getName())
                             .call();
-
                 } catch (RefAlreadyExistsException e) {
                     continue;
                 } catch (CheckoutConflictException e) {
-                    resetBranch(full_path);
-                    String branchName = remoteBranch.getName().replace("refs/remotes/origin/", "");
-                    git.checkout()
-                            .setCreateBranch(true)
-                            .setName(branchName)
-                            .setStartPoint(remoteBranch.getName())
-                            .call();
+                    try {
+                        resetBranch(full_path);
+                        String[] CHECKOUT_ARGS = new String[]{"checkout", branchName};
+                        ProcessBuilder builder = FS.DETECTED.runInShell("git", CHECKOUT_ARGS);
+                        builder.directory(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
+                        OutputStream os = new ByteArrayOutputStream();
+                        int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+                        if (ret != 0) {
+                            logger.error("checkout error: " + full_path + ", branch: " + branchName);
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        logger.error("checkout error: " + full_path + ", branch: " + branchName);
+                        continue;
+                    }
                 } catch (InvalidPathException e) {
-                    logger.error("checkout error: " + remoteBranch.getName());
+                    logger.error("checkout error: " + remoteBranch.getName() + ", " + full_path);
                 } catch (JGitInternalException e) {
                     File lock_file =
                             new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path, ".git/index.lock");
                     if (lock_file.exists()) {
                         lock_file.delete();
                     } else {
-                        e.printStackTrace();
+                        try {
+                            resetBranch(full_path);
+                            String[] CHECKOUT_ARGS = new String[]{"checkout", branchName};
+                            ProcessBuilder builder = FS.DETECTED.runInShell("git", CHECKOUT_ARGS);
+                            builder.directory(new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path));
+                            OutputStream os = new ByteArrayOutputStream();
+                            int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+                            if (ret != 0) {
+                                logger.error("checkout error: " + full_path + ", branch: " + branchName);
+                                continue;
+                            }
+                        } catch (InterruptedException ex) {
+                            logger.error("checkout error: " + full_path + ", branch: " + branchName);
+                            continue;
+                        }
                     }
                 }
             }
