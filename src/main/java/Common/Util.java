@@ -373,18 +373,6 @@ public class Util {
                 project = createProject(url);
             }
 
-            if (isDirExists(gitlabSecret.CODE_PATH_BASE + File.separator + full_path + ".git")) {
-                String[] PULL_ARGS = new String[]{"pull", "--all"};
-                ProcessBuilder pull_builder = FS.DETECTED.runInShell("git", PULL_ARGS);
-                pull_builder.directory(repo_dir);
-                OutputStream pull_os = new ByteArrayOutputStream();
-                int pull_ret = FS.DETECTED.runProcess(pull_builder, pull_os, pull_os, (String) null);
-                if (pull_ret != 0) {
-                    logger.error("pull --all error: " + full_path + ", msg: " + pull_os);
-                    return false;
-                }
-            }
-
             String[] PUSH_ARGS = new String[]{"push", "--all"};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
             builder.directory(repo_dir);
@@ -401,7 +389,7 @@ public class Util {
             os = new ByteArrayOutputStream();
             FS.DETECTED.runProcess(builder, os, os, (String) null);
             if (ret != 0) {
-                logger.error("push --tags error: " + full_path);
+                logger.error("push --tags error: " + full_path + ", err_msg: " + os.toString());
                 return false;
             }
             return true;
