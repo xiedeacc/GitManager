@@ -21,6 +21,11 @@ public class SyncGithubToGitlab {
         Util.loadFile("sync_github_gitlab_repos.txt", repos);
         for (String repo : repos) {
             try {
+                if (repo.startsWith("#")) {
+                    logger.info("ignore: " + repo);
+                    continue;
+                }
+
                 String full_path = Util.getFullPath(repo);
                 if (Util.isGitRepository(full_path)) {
                     if (!Util.changeRemoteUrl(full_path, repo)) {
@@ -28,7 +33,7 @@ public class SyncGithubToGitlab {
                         continue;
                     }
                     if(!Util.updateProject(full_path)) {
-                        logger.error("delete error: " + repo);
+                        logger.error("update error: " + repo);
                         continue;
                     }
                 } else if (Util.isDirExists(full_path)) {
@@ -40,18 +45,33 @@ public class SyncGithubToGitlab {
                         logger.error("clone error: " + repo);
                         continue;
                     }
+                } else if (!Util.isDirExists(full_path)) {
+                    if(!Util.cloneProject(repo)) {
+                        logger.error("clone error: " + repo);
+                        continue;
+                    }
                 }
+
+                if (!Util.checkoutAllBranch(full_path)) {
+                    logger.error("checkout all branch error: " + repo);
+                }
+
                 String gitlab_url = Util.getGitlabUrl(full_path);
                 if (!Util.changeRemoteUrl(full_path, gitlab_url)) {
                     logger.error("change url error: " + gitlab_url);
                     continue;
                 }
-                if(!Util.pushProject(gitlab_url)) {
+                if(!Util.pushProject(full_path)) {
                     logger.error("push error: " + repo);
                     continue;
+                } else {
+                    logger.info("push success: " + repo);
                 }
+
+                Util.changeRemoteUrl(full_path, repo);
             } catch (Exception e) {
                 logger.info("process error: " + repo);
+                e.printStackTrace();
             }
         }
     }
