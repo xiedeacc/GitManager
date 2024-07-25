@@ -1,9 +1,21 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'org.example'
 version '1.0-SNAPSHOT'
+
+//java {
+    //toolchain {
+        //languageVersion = JavaLanguageVersion.of(21)
+    //}
+//}
+
+//compileJava {
+    //options.release.set(21)
+//}
+
 
 repositories {
     mavenCentral()
@@ -32,6 +44,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 
+}
+
+application {
+    mainClass = 'Tools.SyncGithubToGitlab' 
 }
 
 test {
