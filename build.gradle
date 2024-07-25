@@ -1,24 +1,17 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
-
-//java {
-    //toolchain {
-        //languageVersion = JavaLanguageVersion.of(21)
-    //}
-//}
-
-//compileJava {
-    //options.release.set(21)
-//}
-
+group 'io.xiedeacc'
+version '1.0'
 
 repositories {
-    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
+    maven { url 'https://maven.aliyun.com/nexus/content/repositories/jcenter' }
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
 }
 
 dependencies {
@@ -46,10 +39,53 @@ dependencies {
 
 }
 
+test {
+    useJUnitPlatform()
+}
+
 application {
     mainClass = 'Tools.SyncGithubToGitlab' 
 }
 
-test {
-    useJUnitPlatform()
+shadowJar {
+    archiveClassifier.set('')
+    manifest {
+        attributes(
+            'Main-Class': 'Tools.SyncGithubToGitlab'
+        )
+    }
 }
+
+tasks.named('startScripts') {
+    dependsOn shadowJar
+
+    // Ensure the shadow JAR is used for start scripts
+    doLast {
+        classpath = files(shadowJar.archiveFile.get().asFile)
+    }
+}
+
+tasks.named('startShadowScripts') {
+    dependsOn jar
+
+    // Ensure the shadow JAR is used for start scripts
+    doLast {
+        classpath = files(shadowJar.archiveFile.get().asFile)
+    }
+}
+
+distZip {
+    dependsOn shadowJar
+    from { shadowJar.archiveFile }
+}
+
+// Ensure distTar also depends on shadowJar if you use it
+distTar {
+    dependsOn shadowJar
+    from { shadowJar.archiveFile }
+}
+
+tasks.build {
+    dependsOn shadowJar
+}
+

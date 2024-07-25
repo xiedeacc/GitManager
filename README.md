@@ -6,3 +6,8 @@
 ```
 ./gradlew build
 ```
+3. jar
+
+```
+./gradlew clean build
+```
