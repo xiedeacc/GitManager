@@ -122,7 +122,7 @@ public class Util {
 
     public static boolean isValidGitSSHUrl(String url) {
         String GIT_SSH_URL_REGEX =
-                "^git@[\\w.-]+:[\\w.-]+/[\\w.-]+\\.git$";
+                "^git@[\\w.-]+:[\\w.-]+\\.git$";
         Pattern pattern = Pattern.compile(GIT_SSH_URL_REGEX);
         Matcher matcher = pattern.matcher(url);
         return matcher.matches();
@@ -159,7 +159,11 @@ public class Util {
         } else if (isHttpsUrl(url)) {
             full_path = full_path.substring(full_path.indexOf("https://") + 8);
         }
-        return full_path.substring(full_path.indexOf("/") + 1);
+        full_path = full_path.substring(full_path.indexOf("/") + 1);
+        if (!full_path.contains("/")) {
+            full_path = "root/" + full_path;
+        }
+        return full_path;
     }
 
     public static String getGroup(String url) throws IllegalFormatException {
@@ -171,6 +175,11 @@ public class Util {
         if (!isValidLinuxFilePath(full_path)) {
             throw new IllegalFormatException("error format: " + full_path);
         }
+
+        if (full_path.lastIndexOf("/") == -1) {
+            return "";
+        }
+
         return full_path.substring(0, full_path.lastIndexOf("/"));
     }
 
@@ -231,6 +240,9 @@ public class Util {
     }
 
     public static String getGitlabUrl(String full_path) {
+        if (!full_path.contains("/")) {
+            return gitlabSecret.GITLAB_URL_BASE + "root/" + full_path + ".git";
+        }
         return gitlabSecret.GITLAB_URL_BASE + full_path + ".git";
     }
 
@@ -304,7 +316,7 @@ public class Util {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            String[] CLONE_ARGS = new String[]{"clone", "--all", "--no-checkout", url, dir.getAbsolutePath()};
+            String[] CLONE_ARGS = new String[]{"clone", url, dir.getAbsolutePath()};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", CLONE_ARGS);
             builder.directory(dir);
             OutputStream os = new ByteArrayOutputStream();
@@ -326,15 +338,12 @@ public class Util {
         try {
             String full_path = getFullPath(url);
             File dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
             String[] FETCH_ARGS = new String[]{"fetch", "--all", url, dir.getAbsolutePath()};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", FETCH_ARGS);
             builder.directory(dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
-            return ret == 0;
+            return ret == 0|| (ret != 0 && os.toString().contains("fetch --all does not make sense with refspecs"));
         } catch (Exception e) {
         }
         return false;
@@ -391,6 +400,9 @@ public class Util {
 
     public static Group createGroup(String url) throws IllegalFormatException {
         String group_full_path = Util.getGroup(url);
+        if (group_full_path.isEmpty()) {
+            return null;
+        }
         String[] group_names = group_full_path.split("/");
         Group parentGroup = null;
         Group curGroup = null;
@@ -425,7 +437,8 @@ public class Util {
     public static Project createProject(String url) {
         try {
             Group group = createGroup(url);
-            if (group == null) {
+            String full_path = getFullPath(url);
+            if (group == null && full_path.contains("/")) {
                 return null;
             }
 
@@ -433,14 +446,20 @@ public class Util {
             Project project = new Project()
                     .withPath(project_name)
                     .withName(project_name)
-                    .withNamespaceId(group.getId())
                     .withIssuesEnabled(true)
                     .withMergeRequestsEnabled(true)
                     .withWikiEnabled(true)
                     .withPublic(false)
                     .withLfsEnabled(true);
 
-            Optional<Project> projectOptional = gitLabApi.getProjectApi().getOptionalProject(group.getFullPath() + "/" + project_name);
+            Optional<Project> projectOptional;
+            if (group != null) {
+                project.withNamespaceId(group.getId());
+                projectOptional = gitLabApi.getProjectApi().getOptionalProject(group.getFullPath() + "/" + project_name);
+            } else {
+                projectOptional = gitLabApi.getProjectApi().getOptionalProject( project_name);
+            }
+
             if (projectOptional.isPresent()) {
                 return projectOptional.get();
             }
