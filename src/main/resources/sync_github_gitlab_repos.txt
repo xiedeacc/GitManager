@@ -60,3 +60,11 @@ git@github.com:tukaani-project/xz.git
 git@github.com:xiedeacc/bazel-compile-commands-extractor.git
 https://gitlab.com/bzip2/bzip2.git
 https://pagure.io/libaio.git
+git@github.com:aappleby/smhasher.git
+git@github.com:googleapis/googleapis.git
+git@github.com:envoyproxy/data-plane-api.git
+git@github.com:envoyproxy/protoc-gen-validate.git
+git@github.com:google/cel-spec.git
+git@github.com:cncf/xds.git
+git@github.com:grpc/grpc.git
+git@github.com:gperftools/gperftools.git
