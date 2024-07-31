@@ -20,73 +20,19 @@ public class UtilTest {
   public void testIsValidUrl() {
     String ori_url = "git@git.github.com:code/aaa/bbb/ccc.git";
     logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidURL(ori_url) ? "right" : "wrong");
+    logger.info(Util.isValidUrl(ori_url) ? "right" : "wrong");
 
     ori_url = "git.github.com:code/aaa/bbb/ccc.git";
     logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidURL(ori_url) ? "right" : "wrong");
+    logger.info(Util.isValidUrl(ori_url) ? "right" : "wrong");
 
     ori_url = "git.github.com/code/aaa/bbb/ccc.git";
     logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidURL(ori_url) ? "right" : "wrong");
+    logger.info(Util.isValidUrl(ori_url) ? "right" : "wrong");
 
     ori_url = "https://git.github.com/code/aaa/bbb/ccc.git"; // right
     logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidURL(ori_url) ? "right" : "wrong");
-  }
-
-  @Test
-  public void testIsValidGitSSHUrl() {
-    String ori_url = "git@git.github.com:code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitSSHUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git@git.github.com/code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitSSHUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git.github.com:code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitSSHUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git.github.com/code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitSSHUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git@github.com:user/repo.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitSSHUrl(ori_url) ? "right" : "wrong");
-  }
-
-  @Test
-  public void testIsValidGitUrl() {
-    String ori_url = "git@git.github.com:code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git.github.com:code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git@git.github.com/code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "git@git.github.com/code/aaa/bbb/ccc";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "http://git.github.com:code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "http://git.github.com/code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
-
-    ori_url = "https://git.github.com/code/aaa/bbb/ccc.git";
-    logger.info("ori_url: " + ori_url);
-    logger.info(Util.isValidGitUrl(ori_url) ? "right" : "wrong");
+    logger.info(Util.isValidUrl(ori_url) ? "right" : "wrong");
   }
 
   @Test

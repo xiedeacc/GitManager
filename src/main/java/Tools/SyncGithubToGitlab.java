@@ -16,7 +16,8 @@ public class SyncGithubToGitlab {
     }
 
     List<String> repos = Lists.newArrayList();
-    Util.loadFile(repos);
+    Util.loadFile("/root/src/java/GitManager/src/main/resources/sync_github_gitlab_repos.txt",
+            repos);
     for (String repo : repos) {
       try {
         if (repo.startsWith("#")) {
@@ -30,15 +31,8 @@ public class SyncGithubToGitlab {
             logger.error("change url error: " + repo);
             continue;
           }
-          if (!Util.checkoutDefaultBranch(full_path)) {
-            logger.error("checkout to default branch error: " + full_path);
-          }
           if (!Util.updateProject(full_path)) {
             logger.error("update error: " + repo);
-          }
-
-          if (!Util.fetchProject(full_path)) {
-            logger.error("fetch error: " + repo);
           }
         } else if (Util.isDirExists(full_path)) {
           if (!Util.deleteDir(full_path)) {
@@ -54,10 +48,6 @@ public class SyncGithubToGitlab {
             logger.error("clone error: " + repo);
             continue;
           }
-        }
-
-        if (!Util.checkoutAllBranch(full_path)) {
-          logger.error("checkout all branch error: " + repo);
         }
 
         String gitlab_url = Util.getGitlabUrl(full_path);
