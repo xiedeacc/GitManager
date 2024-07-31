@@ -8,13 +8,7 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
-import org.eclipse.jgit.dircache.InvalidPathException;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RemoteConfig;
@@ -293,16 +287,23 @@ public class Util {
         return false;
     }
 
-    public static boolean cloneProject(String full_path) {
+    public static boolean cloneProject(String url) {
         try {
+            String full_path = getFullPath(url);
             File repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
-            String[] CLONE_ARGS = new String[]{"clone", "--mirror", repo_dir.getAbsolutePath()};
+            if (!repo_dir.exists()) {
+                if (!repo_dir.mkdirs()) {
+                    logger.error("mkdir error: " + full_path);
+                }
+            }
+            String[] CLONE_ARGS = new String[]{"clone", "--mirror", url, repo_dir.getAbsolutePath()};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", CLONE_ARGS);
             builder.directory(repo_dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
             return ret == 0;
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -324,9 +325,10 @@ public class Util {
     public static boolean pushProject(String full_path) {
         try {
             File repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
+            full_path = full_path.substring(0, full_path.lastIndexOf(".git"));
             Project project = getGitlabProject(full_path);
             if (project == null) {
-                String url = getRemoteUrl(full_path);
+                String url = getRemoteUrl(full_path + ".git");
                 project = createProject(url);
             }
 
@@ -426,7 +428,7 @@ public class Util {
             Project project = getGitlabProject(full_path);
 
             gitLabApi.getProjectApi().deleteProject(project.getId());
-        } catch (GitLabApiException | IllegalFormatException e) {
+        } catch (GitLabApiException | IllegalFormatException | NullPointerException e) {
             logger.error("delete project error: " + url);
             return false;
         }
