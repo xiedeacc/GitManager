@@ -44,14 +44,14 @@ test {
 }
 
 application {
-    mainClass = 'Tools.RemoveGitlabProject' 
+    mainClass = 'Tools.SyncGithubToGitlab' 
 }
 
 shadowJar {
     archiveClassifier.set('')
     manifest {
         attributes(
-            'Main-Class': 'Tools.RemoveGitlabProject'
+            'Main-Class': 'Tools.SyncGithubToGitlab'
         )
     }
 }
