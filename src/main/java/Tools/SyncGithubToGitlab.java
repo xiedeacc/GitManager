@@ -32,9 +32,6 @@ public class SyncGithubToGitlab {
                         logger.error("change url error: " + repo);
                         continue;
                     }
-                    if (!Util.updateProject(full_path)) {
-                        logger.error("update error: " + repo);
-                    }
                 } else if (Util.isDirExists(full_path)) {
                     if (!Util.deleteDir(full_path)) {
                         logger.error("delete error: " + repo);
@@ -49,6 +46,10 @@ public class SyncGithubToGitlab {
                         logger.error("clone error: " + repo);
                         continue;
                     }
+                }
+
+                if (!Util.updateProject(full_path)) {
+                    logger.error("update error: " + repo);
                 }
 
                 String gitlab_url = Util.getGitlabUrl(full_path);

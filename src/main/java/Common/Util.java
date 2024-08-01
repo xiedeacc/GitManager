@@ -233,7 +233,7 @@ public class Util {
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
             if (ret != 0) {
-                logger.error("set remote-url error: " + full_path);
+                logger.error("set remote-url error: " + full_path + ", " + url);
             }
             return true;
         } catch (Exception e) {
@@ -316,7 +316,22 @@ public class Util {
             builder.directory(repo_dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
-            return ret == 0;
+            if (ret != 0) {
+                logger.error("fetch --all error: " + full_path);
+                return false;
+            }
+
+            repo_dir = new File(gitlabSecret.CODE_PATH_BASE + File.separator + full_path);
+            FETCH_ARGS = new String[]{"lfs", "fetch", "--all"};
+            builder = FS.DETECTED.runInShell("git", FETCH_ARGS);
+            builder.directory(repo_dir);
+            os = new ByteArrayOutputStream();
+            ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("lfs fetch --all error: " + full_path);
+                return false;
+            }
+            return true;
         } catch (Exception e) {
         }
         return false;
@@ -332,13 +347,33 @@ public class Util {
                 project = createProject(url);
             }
 
-            String[] PUSH_ARGS = new String[]{"push", "--mirror"};
+            String[] PUSH_ARGS = new String[]{"push", "--all"};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
             builder.directory(repo_dir);
             OutputStream os = new ByteArrayOutputStream();
             int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
             if (ret != 0) {
-                logger.error("push --mirror error: " + full_path + ", msg: " + os);
+                logger.error("push --all error: " + full_path + ", msg: " + os);
+                return false;
+            }
+
+            PUSH_ARGS = new String[]{"push", "--tags"};
+            builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
+            builder.directory(repo_dir);
+            os = new ByteArrayOutputStream();
+            ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("push --tags error: " + full_path + ", msg: " + os);
+                return false;
+            }
+
+            PUSH_ARGS = new String[]{"lfs", "push", "--all", "origin"};
+            builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
+            builder.directory(repo_dir);
+            os = new ByteArrayOutputStream();
+            ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("lfs push --all origin error: " + full_path + ", msg: " + os);
                 return false;
             }
 
