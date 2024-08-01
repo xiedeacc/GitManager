@@ -296,7 +296,7 @@ public class Util {
                     logger.error("mkdir error: " + full_path);
                 }
             }
-            String[] CLONE_ARGS = new String[]{"clone", "--mirror", url, repo_dir.getAbsolutePath()};
+            String[] CLONE_ARGS = new String[]{"clone", "--bare", url, repo_dir.getAbsolutePath()};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", CLONE_ARGS);
             builder.directory(repo_dir);
             OutputStream os = new ByteArrayOutputStream();

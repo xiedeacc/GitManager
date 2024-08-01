@@ -72,3 +72,4 @@ git@github.com:stackb/rules_proto.git
 git@github.com:PCRE2Project/pcre2.git
 git@github.com:swig/swig.git
 git@github.com:google/or-tools.git
+git@github.com:Mbed-TLS/mbedtls-framework.git
