@@ -1,3 +1,6 @@
+git@github.com:google/tcmalloc.git
+git@code.xiamu.com:gcc-mirror/gcc.git
+git@github.com:llvm/llvm-project.git
 git@github.com:xiedeacc/bazel_template.git
 git@github.com:xiedeacc/GitManager.git
 git@github.com:xiedeacc/share.git
