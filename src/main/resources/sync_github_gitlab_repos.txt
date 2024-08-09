@@ -1,3 +1,7 @@
+https://sourceware.org/git/binutils-gdb.git
+git@github.com:bazel-contrib/toolchains_llvm.git
+git@github.com:xiedeacc/cpp_test.git
+git@github.com:google/benchmark.git
 git@github.com:google/tcmalloc.git
 git@code.xiamu.com:gcc-mirror/gcc.git
 git@github.com:llvm/llvm-project.git
