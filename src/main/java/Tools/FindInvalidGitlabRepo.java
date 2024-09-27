@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class FindInvalidGitlabRepo {
 
-    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
+    private static final Logger logger = LogManager.getLogger(FindInvalidGitlabRepo.class);
 
     public static void main(String[] args) throws UnsupportedEncodingException, NoSuchAlgorithmException {
         List<String> repos = Lists.newArrayList();

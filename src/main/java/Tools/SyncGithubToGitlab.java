@@ -8,11 +8,17 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 
-class Work extends Thread {
-    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
-    private int i;
 
-    public Work(int i) {
+public class SyncGithubToGitlab {
+
+    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
+
+    private static final int thread_num = 8;
+
+    class Worker extends Thread {
+        private final int i;
+
+    public Worker(int i) {
         this.i = i;
     }
 
@@ -24,16 +30,16 @@ class Work extends Thread {
         int cnt = 0;
         for (String repo : repos) {
             try {
-                if (repo.startsWith("#")) {
-                    logger.info("ignore: " + repo);
-                    continue;
-                }
-
-                if (cnt % 8 != i) {
+                if (cnt % thread_num != i) {
                     ++cnt;
                     continue;
                 }
                 ++cnt;
+
+                if (repo.startsWith("#")) {
+                    logger.info("ignore: " + repo);
+                    continue;
+                }
 
                 String full_path = Util.getFullPath(repo);
                 if (Util.isGitRepository(full_path)) {
@@ -59,6 +65,7 @@ class Work extends Thread {
 
                 if (!Util.updateProject(full_path)) {
                     logger.error("update error: " + repo);
+                    continue;
                 }
 
                 String gitlab_url = Util.getGitlabUrl(full_path);
@@ -82,34 +89,17 @@ class Work extends Thread {
     }
 }
 
-public class SyncGithubToGitlab {
-
-    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
-
     public static void main(String[] args) {
 
         if (!Util.loadGitlabSecret()) {
             logger.error("load gitlab_secret.json error!");
             System.exit(-1);
         }
-        Work work0 = new Work(0);
-        Work work1 = new Work(1);
-        Work work2 = new Work(2);
-        Work work3 = new Work(3);
-        Work work4 = new Work(4);
-        Work work5 = new Work(5);
-        Work work6 = new Work(6);
-        Work work7 = new Work(7);
-        Work work8 = new Work(8);
-
-        work0.start();
-        work1.start();
-        work2.start();
-        work3.start();
-        work4.start();
-        work5.start();
-        work6.start();
-        work7.start();
-        work8.start();
+        List<Worker> threads = Lists.newArrayList();
+        for (int i = 0; i < thread_num; ++i) {
+            Worker worker = new Worker(i);
+            worker.start();
+            threads.add(worker);
+        }
     }
 }
