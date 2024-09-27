@@ -7,19 +7,14 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
+class Worker extends Thread {
+    private static final Logger logger = LogManager.getLogger(Worker.class);
+    private int i;
+    private  int thread_num;
 
-
-public class SyncGithubToGitlab {
-
-    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
-
-    private static final int thread_num = 8;
-
-    class Worker extends Thread {
-        private final int i;
-
-    public Worker(int i) {
+    public Worker(int i, int thread_num) {
         this.i = i;
+        this.thread_num = thread_num;
     }
 
     @Override
@@ -88,6 +83,11 @@ public class SyncGithubToGitlab {
         }
     }
 }
+public class SyncGithubToGitlab {
+
+    private static final Logger logger = LogManager.getLogger(SyncGithubToGitlab.class);
+
+    private static final int thread_num = 8;
 
     public static void main(String[] args) {
 
@@ -97,9 +97,11 @@ public class SyncGithubToGitlab {
         }
         List<Worker> threads = Lists.newArrayList();
         for (int i = 0; i < thread_num; ++i) {
-            Worker worker = new Worker(i);
+            Worker worker = new Worker(i, thread_num);
             worker.start();
             threads.add(worker);
         }
     }
+
+
 }
