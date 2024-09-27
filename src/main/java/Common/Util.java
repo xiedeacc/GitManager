@@ -347,6 +347,16 @@ public class Util {
                 project = createProject(url);
             }
 
+            String[] PUSH_ARGS = new String[]{"fetch", "--all"};
+            ProcessBuilder builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
+            builder.directory(repo_dir);
+            OutputStream os = new ByteArrayOutputStream();
+            int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("fetch --all error: " + full_path + ", msg: " + os);
+                return false;
+            }
+
             String[] PUSH_ARGS = new String[]{"push", "-u", "origin" ,"--all"};
             ProcessBuilder builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
             builder.directory(repo_dir);
@@ -367,15 +377,15 @@ public class Util {
                 return false;
             }
 
-            //PUSH_ARGS = new String[]{"lfs", "push", "--all", "origin"};
-            //builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
-            //builder.directory(repo_dir);
-            //os = new ByteArrayOutputStream();
-            //ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
-            //if (ret != 0) {
-                //logger.error("lfs push --all origin error: " + full_path + ", msg: " + os);
-                //return false;
-            //}
+            PUSH_ARGS = new String[]{"lfs", "push", "--all", "origin"};
+            builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
+            builder.directory(repo_dir);
+            os = new ByteArrayOutputStream();
+            ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            if (ret != 0) {
+                logger.error("lfs push --all origin error: " + full_path + ", msg: " + os);
+                return false;
+            }
 
             return true;
         } catch (Exception e) {
