@@ -357,7 +357,7 @@ public class Util {
                 return false;
             }
 
-            PUSH_ARGS = new String[]{"push", "-f", "-u", "origin" ,"--all"};
+            PUSH_ARGS = new String[]{"push", "-u", "origin" ,"--all"};
             builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
             builder.directory(repo_dir);
             os = new ByteArrayOutputStream();
