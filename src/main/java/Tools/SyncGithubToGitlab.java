@@ -60,7 +60,7 @@ class Worker extends Thread {
 
                 if (!Util.updateProject(full_path)) {
                     logger.error("thread_num: " + i + " update error: " + repo);
-                    continue;
+                    System.exit(0);
                 }
 
                 String gitlab_url = Util.getGitlabUrl(full_path);
