@@ -32,52 +32,52 @@ class Worker extends Thread {
                 ++cnt;
 
                 if (repo.startsWith("#")) {
-                    logger.info("ignore: " + repo);
+                    logger.info("thread_num: " + i  + " ignore: " + repo);
                     continue;
                 }
 
                 String full_path = Util.getFullPath(repo);
                 if (Util.isGitRepository(full_path)) {
                     if (!Util.changeRemoteUrl(full_path, repo)) {
-                        logger.error("change url error: " + repo);
+                        logger.error("thread_num: " + i  + "change url error: " + repo);
                         continue;
                     }
                 } else if (Util.isDirExists(full_path)) {
                     if (!Util.deleteDir(full_path)) {
-                        logger.error("delete error: " + repo);
+                        logger.error("thread_num: " + i  + "delete error: " + repo);
                         continue;
                     }
                     if (!Util.cloneProject(repo)) {
-                        logger.error("clone error: " + repo);
+                        logger.error("thread_num: " + i  + "clone error: " + repo);
                         continue;
                     }
                 } else if (!Util.isDirExists(full_path)) {
                     if (!Util.cloneProject(repo)) {
-                        logger.error("clone error: " + repo);
+                        logger.error("thread_num: " + i  + "clone error: " + repo);
                         continue;
                     }
                 }
 
                 if (!Util.updateProject(full_path)) {
-                    logger.error("update error: " + repo);
+                    logger.error("thread_num: " + i  + "update error: " + repo);
                     continue;
                 }
 
                 String gitlab_url = Util.getGitlabUrl(full_path);
                 if (!Util.changeRemoteUrl(full_path, gitlab_url)) {
-                    logger.error("change url error: " + gitlab_url);
+                    logger.error("thread_num: " + i  + "change url error: " + gitlab_url);
                     continue;
                 }
                 if (!Util.pushProject(full_path)) {
-                    logger.error("push error: " + repo);
+                    logger.error("thread_num: " + i  + "push error: " + repo);
                     continue;
                 } else {
-                    logger.info("push success: " + repo);
+                    logger.info("thread_num: " + i  + "push success: " + repo);
                 }
 
                 Util.changeRemoteUrl(full_path, repo);
             } catch (Exception e) {
-                logger.info("process error: " + repo);
+                logger.info("thread_num: " + i  + "process error: " + repo);
                 e.printStackTrace();
             }
         }
