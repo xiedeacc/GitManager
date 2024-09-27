@@ -470,5 +470,17 @@ public class Util {
         return true;
     }
 
-
+    public static Project getProject(int project_id) {
+        try {
+            Optional<Project> projectOptional;
+            projectOptional = gitLabApi.getProjectApi().getOptionalProject(project_id);
+            if (projectOptional.isPresent()) {
+                return projectOptional.get();
+            }
+            return null;
+        } catch ( Exception e) {
+            logger.error("create project error: " + project_id);
+        }
+        return null;
+    }
 }
