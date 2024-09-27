@@ -357,11 +357,11 @@ public class Util {
                 return false;
             }
 
-            String[] PUSH_ARGS = new String[]{"push", "-u", "origin" ,"--all"};
-            ProcessBuilder builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
+            PUSH_ARGS = new String[]{"push", "-u", "origin" ,"--all"};
+            builder = FS.DETECTED.runInShell("git", PUSH_ARGS);
             builder.directory(repo_dir);
-            OutputStream os = new ByteArrayOutputStream();
-            int ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
+            os = new ByteArrayOutputStream();
+            ret = FS.DETECTED.runProcess(builder, os, os, (String) null);
             if (ret != 0) {
                 logger.error("push --all error: " + full_path + ", msg: " + os);
                 return false;
