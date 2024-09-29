@@ -20,6 +20,8 @@ import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.Project;
 
 import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -492,5 +494,24 @@ public class Util {
             logger.error("create project error: " + project_id);
         }
         return null;
+    }
+
+
+    public static String getProjectIdSha256(int project_id) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        String input = String.valueOf(project_id);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(input.getBytes("UTF-8"));
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    public static String getProjectHashPath(String sha256) {
+        return "/zfs/gitlab_data/repositories/@hashed/" + sha256.substring(0, 2) +"/"+ sha256.substring(2, 4) + "/" + sha256 + ".git";
     }
 }
